@@ -11,21 +11,33 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 import os
+import environ  # <-- Updated!
+env = environ.Env(  # <-- Updated!
+    # set casting, default value
+    DEBUG=(bool, False),
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+environ.Env.read_env(BASE_DIR / '.env')  # <-- Updated!
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1md8!3%9t$v3nd7ztt$37$#5cf3$f(h@1lu08!^5a_80+%ghk&'
+SECRET_KEY = env.str('SECRET_KEY', default=get_random_secret_key())  # <-- Updated!
+DEBUG = env('DEBUG')  # <-- Updated!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.fly.dev']  # <-- Updated!
+
+CSRF_TRUSTED_ORIGINS = ['https://*.fly.dev']  # <-- Updated!
 
 
 # Application definition
@@ -44,6 +56,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'django_filters',
+    'whitenoise.runserver_nostatic',  # <-- Updated!
+
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
@@ -57,6 +71,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # <-- Updated!
+
 ]
 
 ROOT_URLCONF = 'housinghelper.urls'
@@ -86,10 +102,8 @@ WSGI_APPLICATION = 'housinghelper.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    # read os.environ['DATABASE_URL']
+    'default': env.db('DATABASE_URL', default="sqlite://db.sqlite")  # <-- Updated!
 }
 
 
@@ -128,6 +142,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # <-- Updated!
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # <-- Updated!
+
 MEDIA_URL='/media/'
 MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
