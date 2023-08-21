@@ -102,8 +102,14 @@ WSGI_APPLICATION = 'housinghelper.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    # read os.environ['DATABASE_URL']
-    'default': env.db('DATABASE_URL', default="sqlite://db.sqlite")  # <-- Updated!
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mydb',
+        'USER': 'root',
+        'PASSWORD': 'admin',
+        'HOST':'localhost',
+        'PORT':'3306',
+    }
 }
 
 
